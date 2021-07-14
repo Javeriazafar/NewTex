@@ -158,7 +158,7 @@ export default function SupplierOrder() {
             </CardContent>
             <CardActions>
             
-            <Link href={`/SupplierDetails/${item.user_id}`}>
+            <Link href={`../Manufacturer/SupplierDetails/${item.user_id}`}>
             
             <Button size="small" color="textPrimary">
             Place Order

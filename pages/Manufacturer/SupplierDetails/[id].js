@@ -1,5 +1,5 @@
 import React, { useState, map } from "react";
-import PageHeader from "../../components/PageHeader";
+import PageHeader from "../../../components/PageHeader";
 import PeopleOutlineTwoToneIcon from "@material-ui/icons/AccountBalance";
 import { Paper, makeStyles, Container, Grid } from "@material-ui/core";
 import { red } from "@material-ui/core/colors";
@@ -11,7 +11,7 @@ import axios from "axios";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import Typography from "@material-ui/core/Typography";
-import Controls from "../../components/controls/Controls";
+import Controls from "../../../components/controls/Controls";
 const useStyles = makeStyles((theme) => ({
   root: {
     maxWidth: 345,

@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import 'semantic-ui-css/semantic.min.css';
-import SideMenu from '../components/sideMenu/SideMenu' ;
-import TestHeader from '../components/Headers/TestHeader' ;
+import SideMenu from '../../components/sideMenu/SideMenu' ;
+import TestHeader from '../../components/Headers/TestHeader' ;
 import {CssBaseline, makeStyles,createMuiTheme, ThemeProvider} from '@material-ui/core' ;
 
-import Supplier from "../components/Forms/Supplier/SupplierMain";
+import Supplier from "../../components/Forms/Supplier/SupplierMain";
 const theme = createMuiTheme({
     palette: {
       primary: {

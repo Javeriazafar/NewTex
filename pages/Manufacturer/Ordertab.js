@@ -1,10 +1,10 @@
 
 
 import React from 'react';
-import SideMenu from '../components/sideMenu/SideMenu' ;
-import TestHeader from '../components/Headers/TestHeader' ;
+import SideMenu from '../../components/sideMenu/SideMenu' ;
+import TestHeader from '../../components/Headers/TestHeader' ;
 import {CssBaseline, makeStyles,createMuiTheme, ThemeProvider} from '@material-ui/core' ;
-import SSOform from '../components/Forms/SSOSUPPLIER/SSOform';
+import SupplierOrder from '../../components/Forms/Supplierorder/Order';
 
 const theme = createMuiTheme({
   palette: {
@@ -39,7 +39,7 @@ const theme = createMuiTheme({
       <TestHeader />
       <div style={{paddingLeft: '330px',width: '100%',paddingRight: '10px'}} >
       
-     <SSOform  
+     <SupplierOrder  
      />
     </div>
     

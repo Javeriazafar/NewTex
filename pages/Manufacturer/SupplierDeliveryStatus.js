@@ -196,12 +196,13 @@ export default function SSOform() {
                 {/* <TableCell>{item.date}</TableCell> */}
                 <TableCell>
                   <Controls.ActionButton
+                  value='Order Pending'
                     color="primary"
                     onClick={() => {
                       openInPopup(item);
                     }}
                   >
-                    Order Pending
+                   
                   </Controls.ActionButton>
                   <Controls.ActionButton
                     color="secondary"
