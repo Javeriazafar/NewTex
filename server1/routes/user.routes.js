@@ -1,20 +1,48 @@
 const { Router } = require("express");
 const express = require("express");
 const router = express.Router();
-const fileUpload = require('express-fileupload');
-
-const app= express();
+const fileUpload = require("express-fileupload");
+var sqlclient = require("mysql-queries");
+const app = express();
 const db = require("../db");
-const fs =require('fs');
-const {promisify} = require('util');
-const pipeline= promisify(require('stream').pipeline)
-const multer= require('multer');
-const { debounce } = require("@material-ui/core");
-const upload=multer();
+const fs = require("fs");
+const { promisify } = require("util");
+const pipeline = promisify(require("stream").pipeline);
+const multer = require("multer");
+
+const upload = multer();
 app.use(fileUpload());
 // router.get("/getusers", Userctl.apiGetAllUsers);
 router.route("/getall").get((req, res) => {
   db.query("select * from user", (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send(result);
+  });
+});
+
+router.route("/getSSOSALESORDER").get((req, res) => {
+  db.query("select * from supp_sales_order", (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send(result);
+  });
+});
+
+router.route("/getMSO").get((req, res) => {
+  db.query("SELECT user_name, merchandizer, upc, descript, SOCreatedAt, quantity, status FROM user inner join  manu_sales_order on user.user_id= manu_sales_order.user_id",
+   (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send(result);
+  });
+});
+
+router.route("/getallrequests").get((req, res) => {
+  db.query("select *  from user inner JOIN requestbymanufacturer ON user.user_id=requestbymanufacturer.user_id", (err, result) => {
     if (err) {
       console.log(err);
     }
@@ -39,11 +67,19 @@ router.route("/createuser").post((req, res) => {
   const account_address = data.account_address;
   const email = data.email;
   const location = data.location;
- 
+
   //console.log(req.body.user_name)
   db.query(
     "INSERT INTO user (user_name,password,role_id,privatekey,account_address,email,location) VALUES (?,?,?,?,?,?)",
-    [user_name, password, privatekey,role_id, account_address, email, location],
+    [
+      user_name,
+      password,
+      privatekey,
+      role_id,
+      account_address,
+      email,
+      location,
+    ],
     (err, result) => {
       if (err) {
         console.log(err);
@@ -53,6 +89,18 @@ router.route("/createuser").post((req, res) => {
     }
   );
 });
+
+router.route("/getsuppliersItems/:id").get((req, res) => {
+  db.query(
+    "SELECT * FROM supplier_item WHERE user_id=?",
+    [req.params.id],
+    (err, rows, fields) => {
+      if (!err) res.send(rows);
+      else console.log(err);
+    }
+  );
+});
+
 router.route("/getallproducts").get((req, res) => {
   db.query("select * from product", (err, result) => {
     if (err) {
@@ -61,43 +109,49 @@ router.route("/getallproducts").get((req, res) => {
     res.send(result);
   });
 });
-router.route("/createitem", upload.single('file')).post((req, res) => {
-  const upc = req.body.upc;
-  const user_id = req.body.user_id;
-  const material = req.body.material;
-  const createdAt = req.body.createdAt;
-  const quantity = req.body.quantity;
-  const price = req.body.price;
-  const longitutde = req.body.longitutde;
-  const latitude = req.body.latitude;
-  // const filename= 'file'+ req.data.detectedFileExtension;
-  // await pipeline(req.data.stream)
-  const file= req.body.file;
-console.log(file)
+router.route("/createitem", upload.single("file")).post((req, res) => {
+  const {
+    file,
+    body: { upc, user_id, material, quantity, longitude, latitude, price },
+  } = req;
+
+  console.log(req.files.file);
   let uploadPath;
 
   if (!req.files || Object.keys(req.files).length === 0) {
-    console.log(file)
+    console.log(file);
   }
- 
+
   // name of the input is sampleFile
-  uploadPath = __dirname + '/upload/' + req.files.file.name;
+  uploadPath = __dirname + "/../../public/upload/" + req.files.file.name;
 
   console.log(req.files.file);
 
-  // Use mv() to place file on the server
+  //Use mv() to place file on the server
   req.files.file.mv(uploadPath, function (err) {
-   
     if (err) return res.status(500).send(err);
-      
-      db.query("INSERT INTO SUPPLIER_ITEM(user_id,material,quantity,upc,price,longitude,latitude,createdAt,image) values(?,?,?,?,?,?,?,?,?)", [user_id, material, quantity, upc, price, longitutde, latitude, createdAt,req.files.file.name], (err, rows) => {
+
+    db.query(
+      "INSERT INTO SUPPLIER_ITEM(user_id,material,quantity,upc,price,longitude,latitude,image) values(?,?,?,?,?,?,?,?)",
+      [
+        user_id,
+        material,
+        quantity,
+        upc,
+        price,
+        longitude,
+        latitude,
+        req.files.file.name,
+      ],
+      (err, rows) => {
         if (!err) {
-         res.send(req.body)
+          res.send(req.body);
         } else {
           console.log(err);
         }
-      });
-    });
+      }
+    );
+  });
   // db.query(
   //   "INSERT INTO SUPPLIER_ITEM(user_id,material,quantity,upc,price,longitude,latitude,createdAt) values(?,?,?,?,?,?,?,?)",
   //   [user_id, material, quantity, upc, price, longitutde, latitude, createdAt],
@@ -123,6 +177,30 @@ router.route("/updateuser").put((req, res) => {
         console.log(err);
       } else {
         res.send(result);
+      }
+    }
+  );
+});
+
+router.route("/acceptorder").get((req, res) => {
+  const upc = req.query.upc;
+  const new_quantity = req.query.quantity;
+  const merchandizer = req.query.merchandizer;
+  const descrip= req.query.description;
+  const material= req.query.material;
+  const muser_id= req.query.muser_id;
+  const suser_id=26
+  const req_id = req.query.req_id
+console.log(req.query.req_id)
+  db.query(
+    `call Accept_Manu_Order(?,?,?,?,?,?,?,?)`,
+    [upc,new_quantity, merchandizer, material, descrip,suser_id,muser_id, req_id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        
+        res.send(result[0]);
       }
     }
   );
@@ -165,6 +243,27 @@ router.route("/createproduct").post((req, res) => {
   );
 });
 
+router.route("/createrequestmanu").post((req, res) => {
+  const upc = req.body.upc;
+  const merchandizer = req.body.merchandizer;
+  const material = req.body.material;
+  const description = req.body.description;
+  const user_id = req.body.user_id;
+  const quantity = req.body.quantity;
+
+  db.query(
+    "INSERT INTO requestbymanufacturer(quantity, upc, merchandizer, material, description, user_id) values(?,?,?,?,?,?)",
+    [quantity,upc,merchandizer, material, description,user_id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(req.body);
+      }
+    }
+  );
+});
+
 router.route("/updateproduct").put((req, res) => {
   const cost_sku = req.body.cost_sku;
   const quantity = req.body.quantity;
@@ -176,6 +275,25 @@ router.route("/updateproduct").put((req, res) => {
       if (err) {
         console.log(err);
       } else {
+        res.send(result);
+      }
+    }
+  );
+});
+
+router.route("/updatemanurequest").put((req, res) => {
+  
+  const quantity = req.body.quantity;
+  const req_id= req.body.req_id;
+  console.log(req.body.req_id);
+  db.query(
+    'call updaterequest(?,?) ',
+       [req_id,quantity],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(result)
         res.send(result);
       }
     }
@@ -194,7 +312,6 @@ router.route("/getsuppliersItems").get((req, res) => {
     }
   );
 });
-
 
 router.route("/updateitem").put((req, res) => {
   const quantity = req.body.quantity;

@@ -1,5 +1,4 @@
 import React, { useState, map } from "react";
-import AdminForm from "./AdminForm";
 import PageHeader from "../../PageHeader";
 import PeopleOutlineTwoToneIcon from "@material-ui/icons/AccountBalance";
 import {
@@ -23,17 +22,17 @@ import Notification from "../../Notification";
 import ConfirmDialog from "../../ConfirmDialog";
 
 const headCells = [
-  { id: "user_name", label: "User Name" },
-  { id: "password", label: "Password" },
-  { id: "role_id", label: "Role" },
-  { id: "account_address", label: "Account Address" },
-  { id: "email", label: "Email" },
-  { id: "location", label: "Location" },
+  { id: "user_name", label: "UPC" },
+  { id: "password", label: "Merchandizer" },
+  { id: "role_id", label: "Material" },
+  { id: "account_address", label: "Description" },
+  { id: "email", label: "Order Date" },
+  { id: "location", label: "Quantity Delivered" },
   //{id:'date', label: 'Date'},
   { id: "actions", label: "Actions" },
 ];
 
-export default function AdminMain() {
+export default function SSOform() {
   const [filterFn, setFilterFn] = useState({
     fn: (items) => {
       return items;
@@ -88,7 +87,7 @@ export default function AdminMain() {
  
 
   React.useEffect(() => {
-    axios.get("http://localhost:5000/user/getall").then((response) => {
+    axios.get("http://localhost:5000/user/getSSOSALESORDER").then((response) => {
       console.log(response);
       setUsers(response.data);
     });
@@ -172,13 +171,13 @@ export default function AdminMain() {
           <TblHead />
           <TableBody>
             {recordsAfterPaging().map((item) => (
-              <TableRow key={item.user_id}>
-                <TableCell>{item.user_name}</TableCell>
-                <TableCell>{item.password}</TableCell>
-                <TableCell>{item.role_id}</TableCell>
-                <TableCell>{item.account_address}</TableCell>
-                <TableCell>{item.email}</TableCell>
-                <TableCell>{item.location}</TableCell>
+              <TableRow key={item.sso_id}>
+                <TableCell>{item.upc}</TableCell>
+                <TableCell>{item.merchandizer}</TableCell>
+                <TableCell>{item.material}</TableCell>
+                <TableCell>{item.descript}</TableCell>
+                <TableCell>{item.POCreatedAt}</TableCell>
+                <TableCell>{item.quantity}</TableCell>
                 {/* <TableCell>{item.date}</TableCell> */}
                 <TableCell>
                   <Controls.ActionButton
@@ -216,11 +215,7 @@ export default function AdminMain() {
         openPopup={openPopup}
         setOpenPopup={setOpenPopup}
       >
-        <AdminForm
-          addOrEdit={addOrEdit}
-          setOpenPopup={setOpenPopup}
-          recordForEdit={recordForEdit}
-        />
+        
       </Popup>
       <Notification notify={notify} setNotify={setNotify} />
       <ConfirmDialog

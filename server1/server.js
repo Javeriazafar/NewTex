@@ -5,9 +5,9 @@ const db = require('./db');
 const cors= require('cors');
 const UserService = require('./services/services');
 const router = require('./routes/user.routes');
+const router1=require('./routes/item.routes');
 const app= express();
 app.use(express.static('upload'));
-
 app.use(cors());
 // default option
 app.use(fileUpload());
@@ -26,6 +26,7 @@ const port = 5000 || process.env.PORT;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/user',router);
+//app.use('/supplier',require('./routes/item.routes'));
 // module.exports = class User{
 
 //   static async apiGetAllUsers(req, res, next){

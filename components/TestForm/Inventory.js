@@ -81,7 +81,7 @@ export default function Inventory() {
         axios.get('http://localhost:5000/user/getall')
         .then((response)=>{
             console.log(response)
-            setUsers(response.data);
+            setUserList(response.data);
         }); 
       }, []);
 

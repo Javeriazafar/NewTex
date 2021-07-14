@@ -6,6 +6,7 @@ const db = mysql.createConnection({
     database:'blockchaindb' ,
     
 });
+require('mysql-queries').init(db);
 db.connect((err)=>{
     if(err)
     console.log(err.message);

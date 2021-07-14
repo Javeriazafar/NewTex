@@ -1,5 +1,5 @@
 import React, { useState, map } from "react";
-import useReactRouter from 'use-react-router';import PageHeader from "../../PageHeader";
+import PageHeader from "../../components/PageHeader";
 import PeopleOutlineTwoToneIcon from "@material-ui/icons/AccountBalance";
 import {
   Paper,
@@ -7,19 +7,26 @@ import {
   Toolbar,
   InputAdornment,
 } from "@material-ui/core";
-import useTable from "../../useTable";
-import Controls from "../../controls/Controls";
+import Popup from "../../components/Popup";
+import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
+import CloseIcon from "@material-ui/icons/Close";
+import Notification from "../../components/Notification";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import useTable from "../../components/useTable";
+import Controls from "../../components/controls/Controls";
 import { Search } from "@material-ui/icons";
 import axios from "axios";
 import AddIcon from "@material-ui/icons/Add";
-import Notification from "../../Notification";
-import ConfirmDialog from "../../ConfirmDialog";
-import Link from 'next/link'
+
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
+import supplychain_contract from "../../components/Forms/factory";
+import Provider from "@truffle/hdwallet-provider";
+import Web3 from "web3";
+import InventoryForm from "./InventoryForm";
 
 
 const headCells = [
@@ -30,6 +37,7 @@ const headCells = [
   { id: "quantity", label: "Quantity" },
   { id: "actions", label: "Actions" },
 ];
+
 const useStyles = makeStyles({
   root: {
     minWidth: 75,
@@ -47,7 +55,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function SupplierOrder() {
+export default function RequestsByManufacturer() {
   const classes = useStyles();
   const [filterFn, setFilterFn] = useState({
     fn: (items) => {
@@ -68,7 +76,9 @@ export default function SupplierOrder() {
     subTitle: "",
   });
   const [users, setUsers] = useState([]);
-
+  const [item, setitem] = useState([]);
+  const [openPopup, setOpenPopup] = useState(false);
+  const [recordForEdit, setRecordForEdit] = useState(null);
   const { TblPagination, recordsAfterPaging } = useTable(
     headCells,
     users,
@@ -91,14 +101,61 @@ export default function SupplierOrder() {
   };
   React.useEffect(() => {
     axios
-      .get("http://localhost:5000/user/getsuppliersItems")
+      .get("http://localhost:5000/user/getallrequests")
       .then((response) => {
         console.log(response);
         setUsers(response.data);
       });
+    
   }, []);
 
+const updateuser=async(user,req_id)=>{
+  console.log(req_id,user)
+  axios
+  .put("http://localhost:5000/user/updatemanurequest",{
+    quantity:user,
+    req_id:req_id
+  })
+  .then(async(response) => {
+    // cant run contract purchaseItemByManufacturer method herr eas this tab is for supplier
+    // need to update the manu  sales order tab wih accept delivery button then onclick run the contract method
+    
 
+    setUsers(response.data[0]);
+  });
+}
+
+
+const openInPopup = (item) => {
+  setRecordForEdit(item);
+  setOpenPopup(true);
+};
+
+
+
+
+const addOrEdit = ([user,req_id], resetForm) => {
+  setOpenPopup(false);
+  // if(user.id!=0)
+  console.log(user.quantitys,req_id);
+  updateuser(user.quantitys,req_id)
+  // const accounts = "0xebf665bf612b6d7c129d8926627d393e0a6a8199";
+    // console.log(web3.eth.getBalance(accounts).then(console.log));
+    // const receiept = await supplychain_contract.methods
+    //   .purchaseItemByManufacturer(item.upc, item.quantity, item.merchandizer)
+    //   .send({
+    //     from: accounts,
+    //   });
+
+    // console.log(receiept.transactionHash);
+  setNotify({
+    isOpen: true,
+    message: `Submitted Successfully at transaction ID : ${user}`,
+    type: "success",
+  });
+  setRecordForEdit(null);
+  resetForm;
+};
   return (
     <>
       <PageHeader
@@ -137,7 +194,7 @@ export default function SupplierOrder() {
         {recordsAfterPaging().map((item) => (
           <Card className={classes.root} variant="outlined">
             <CardContent key={item.user_id}>
-              Supplier Name:
+              Manufacturer Name:
               <Typography variant="h5" component="h2">
                 {item.user_name}
               </Typography>
@@ -146,37 +203,57 @@ export default function SupplierOrder() {
                 color="textPrimary"
                 gutterBottom
               >
-                Email: {item.email}
+                Merchandizer to contact: {item.merchandizer}
               </Typography>
               <Typography variant="body2" component="p">
-                Location: {item.location}
+                Material: {item.material}
               </Typography>
+              <Typography variant="body2" component="p">
+                UPC: {item.upc}
+              </Typography>
+              <Typography variant="body2" component="p">
+                Quantity Required: {item.quantity}
+              </Typography>
+              <Typography variant="body2" component="p">
+              Status: {item.status}
+            </Typography>
               <Typography className={classes.pos} color="textPrimary">
-                Items Available: {item.Item_list}
+                Description: {item.description}
                 <br />
               </Typography>
             </CardContent>
-            <CardActions>
-            
-            <Link href={`/SupplierDetails/${item.user_id}`}>
-            
-            <Button size="small" color="textPrimary">
-            Place Order
-          </Button></Link>
-             
-            </CardActions>
+            <Controls.ActionButton
+            color="primary"
+            onClick={() => {
+              openInPopup(item);
+            }}
+          >
+          Check Iventory
+            <EditOutlinedIcon fontSize="small" />
+          </Controls.ActionButton>
            
           </Card>
         ))}
 
         <TblPagination />
       </Paper>
-
-      <Notification notify={notify} setNotify={setNotify} />
-      <ConfirmDialog
-        confirmDialog={confirmDialog}
-        setConfirmDialog={setConfirmDialog}
+      <Popup
+      title="User Form"
+      openPopup={openPopup}
+      setOpenPopup={setOpenPopup}
+    >
+      <InventoryForm
+        addOrEdit={addOrEdit}
+        setOpenPopup={setOpenPopup}
+        recordForEdit={recordForEdit}
       />
+    </Popup>
+    <Notification notify={notify} setNotify={setNotify} />
+    <ConfirmDialog
+      confirmDialog={confirmDialog}
+      setConfirmDialog={setConfirmDialog}
+    />
+    
     </>
   );
 }

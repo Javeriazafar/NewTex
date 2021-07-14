@@ -1,6 +1,5 @@
 import React, { useState, map } from "react";
-import AdminForm from "./AdminForm";
-import PageHeader from "../../PageHeader";
+import PageHeader from "../../components/PageHeader";
 import PeopleOutlineTwoToneIcon from "@material-ui/icons/AccountBalance";
 import {
   Paper,
@@ -11,29 +10,33 @@ import {
   Toolbar,
   InputAdornment,
 } from "@material-ui/core";
-import useTable from "../../useTable";
-import Controls from "../../controls/Controls";
+import useTable from "../../components/useTable";
+import Controls from "../../components/controls/Controls";
 import {  Search } from "@material-ui/icons";
 import axios from "axios";
 import AddIcon from "@material-ui/icons/Add";
-import Popup from "../../Popup";
+import Popup from "../../components/Popup";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import CloseIcon from "@material-ui/icons/Close";
-import Notification from "../../Notification";
-import ConfirmDialog from "../../ConfirmDialog";
+import Notification from "../../components/Notification";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 const headCells = [
-  { id: "user_name", label: "User Name" },
-  { id: "password", label: "Password" },
-  { id: "role_id", label: "Role" },
-  { id: "account_address", label: "Account Address" },
-  { id: "email", label: "Email" },
-  { id: "location", label: "Location" },
+  { id: "Supplier", label: "Supplier" },
+
+  { id: "upc", label: "UPC" },
+  { id: "merchandizer", label: "Merchandizer" },
+  
+  { id: "description", label: "Description" },
+  { id: "order", label: "Order Date" },
+  { id: "quantity", label: "Quantity" },
+  { id: "status", label: "Status" },
+
   //{id:'date', label: 'Date'},
   { id: "actions", label: "Actions" },
 ];
 
-export default function AdminMain() {
+export default function SSOform() {
   const [filterFn, setFilterFn] = useState({
     fn: (items) => {
       return items;
@@ -86,9 +89,18 @@ export default function AdminMain() {
     });
   };
  
+// function to acceptdelivery and use contract method
+// const accounts = "0xebf665bf612b6d7c129d8926627d393e0a6a8199";
+    // //console.log(web3.eth.getBalance(accounts).then(console.log));
+    // const receiept = await supplychain_contract.methods
+    //   .purchaseItemByManufacturer(response.data[0].upc, user, response.data[0].merchandizer)
+    //   .send({
+    //     from: accounts,
+    //   });
 
+    // console.log(receiept.transactionHash);
   React.useEffect(() => {
-    axios.get("http://localhost:5000/user/getall").then((response) => {
+    axios.get("http://localhost:5000/user/getMSO").then((response) => {
       console.log(response);
       setUsers(response.data);
     });
@@ -172,13 +184,15 @@ export default function AdminMain() {
           <TblHead />
           <TableBody>
             {recordsAfterPaging().map((item) => (
-              <TableRow key={item.user_id}>
+              <TableRow key={item.mso_id}>
                 <TableCell>{item.user_name}</TableCell>
-                <TableCell>{item.password}</TableCell>
-                <TableCell>{item.role_id}</TableCell>
-                <TableCell>{item.account_address}</TableCell>
-                <TableCell>{item.email}</TableCell>
-                <TableCell>{item.location}</TableCell>
+                <TableCell>{item.upc}</TableCell>
+                <TableCell>{item.merchandizer}</TableCell>
+                <TableCell>{item.descript}</TableCell>
+                <TableCell>{item.SOCreatedAt}</TableCell>
+                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{item.status}</TableCell>
+
                 {/* <TableCell>{item.date}</TableCell> */}
                 <TableCell>
                   <Controls.ActionButton
@@ -187,7 +201,7 @@ export default function AdminMain() {
                       openInPopup(item);
                     }}
                   >
-                    <EditOutlinedIcon fontSize="small" />
+                    Order Pending
                   </Controls.ActionButton>
                   <Controls.ActionButton
                     color="secondary"
@@ -216,11 +230,7 @@ export default function AdminMain() {
         openPopup={openPopup}
         setOpenPopup={setOpenPopup}
       >
-        <AdminForm
-          addOrEdit={addOrEdit}
-          setOpenPopup={setOpenPopup}
-          recordForEdit={recordForEdit}
-        />
+        
       </Popup>
       <Notification notify={notify} setNotify={setNotify} />
       <ConfirmDialog

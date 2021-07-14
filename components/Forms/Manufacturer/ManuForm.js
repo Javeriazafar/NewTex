@@ -90,8 +90,6 @@ export default function ManuForm(props){
         try{
             console.log()
     const accounts = '0xebf665bf612b6d7c129d8926627d393e0a6a8199'
-    console.log(supplychain_contract)
-    console.log(values._upc,values.machine,values.productupc,values.merch_id,values.treatments,values.empaddress)
     const product= await supplychain_contract.methods.processedItemByManufacturer(values._upc,values.machine,values.productupc,values.merch_id,values.treatments,values.empaddress).send({
         from:accounts
     })
