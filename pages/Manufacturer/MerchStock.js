@@ -42,7 +42,7 @@ const headCells = [
  
 ];
 
-export default function SSOform(props) {
+export default function MerchStock(props) {
   const buttonclick = useSelector((state) => state.item);
   console.log(buttonclick);
   const dispatch = useDispatch();

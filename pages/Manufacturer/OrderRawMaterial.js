@@ -1,10 +1,10 @@
 
 
 import React from 'react';
-import SideMenu from '../../../components/sideMenu/SideMenu' ;
-import TestHeader from '../../../components/Headers/TestHeader' ;
+import SideMenu from '../../components/sideMenu/SideMenu' ;
+import TestHeader from '../../components/Headers/TestHeader' ;
 import {CssBaseline, makeStyles,createMuiTheme, ThemeProvider} from '@material-ui/core' ;
-import SupplierOrder from '../../../components/Forms/Supplierorder/Order';
+import SupplierOrder from '../../components/Forms/Supplierorder/Order';
 
 const theme = createMuiTheme({
   palette: {

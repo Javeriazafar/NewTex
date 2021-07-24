@@ -166,7 +166,18 @@ router.route("/getsuppliersItems/:id").get((req, res) => {
   );
 });
 
-router.route("/getsupplierrequests/:id").get((req, res) => {
+router.route("/getmanufacturerrequests/:id").get((req, res) => {
+  db.query(
+    "SELECT * FROM requestbymanufacturer WHERE suser_id=?",
+    [req.params.id],
+    (err, rows, fields) => {
+      if (!err) res.send(rows);
+      else console.log(err);
+    }
+  );
+});
+
+router.route("/getmanufacturerrequests/:id").get((req, res) => {
   db.query(
     "SELECT * FROM requestbymanufacturer WHERE user_id=?",
     [req.params.id],
@@ -363,9 +374,9 @@ router.route("/createrequestmanu").post((req, res) => {
   const merchandizer = req.body.merchandizer;
   const material = req.body.material;
   const description = req.body.description;
-  const user_id = req.body.user_id;
+  const user_id = req.body.user_id;// manufacturer
   const quantity = req.body.quantity;
-  const suser_id = req.body.Suser_id;
+  const suser_id = req.body.Suser_id;// supplier
 
 
   db.query(

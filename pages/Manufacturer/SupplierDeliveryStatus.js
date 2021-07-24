@@ -122,7 +122,6 @@ export default function SSOform(props) {
   const acceptDelivery = async ({ item }) => {
     console.log(item.quantity);
     const accounts = "0x6829b48374596ada2b7cba811697454ed950c71e";
-    ("18748502726993317880");
     console.log(supplychain_contract.methods.purchaseItemByManufacturer);
     const receiept = await supplychain_contract.methods
       .purchaseItemByManufacturer(item.upc, item.quantity, item.merchandizer)

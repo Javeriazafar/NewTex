@@ -65,8 +65,8 @@ export default function ManuOrderDetailsForm(props) {
         merchandizer: values.merchandizer,
         material: props.material,
         description: values.desc,
-        Suser_id:props.user_id,
-        user_id: user_id, //35- Mnufacturer id
+        Suser_id:props.user_id,//supplier user_id
+        user_id: user_id, //35 - Manufacturer id
         quantity: values.quantity,
       })
       .then((response) => {

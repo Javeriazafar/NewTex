@@ -115,7 +115,7 @@ export default function RequestsByManufacturer() {
   React.useEffect(() => {
     axios
       .get("http://localhost:5000/user/getallrequests")// get requests wherer user-id of supplier logged in matches the suser-id against the manu requests
-      .then((response) => {  // use getsupplierrequests/${id} this api
+      .then((response) => {  // use getmanufacturerrequests/${id} this api
         console.log(response);
         setUsers(response.data);
       });
