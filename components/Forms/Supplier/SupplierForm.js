@@ -73,7 +73,6 @@ export default function SuppForm(props) {
         console.log();
 
         const accounts = "0x17ca0f60ee0d9126f410dba466a659b3fb751496";
-        console.log(supplychain_contract);
         const supplier_provider = new Provider(
           "9176b3b77e8cec54e5406f93ffe839cd9115a7efe36d2a0a53fc71f8721352db",
           values.infuraKey
@@ -87,13 +86,19 @@ export default function SuppForm(props) {
         const account = web3s.eth.accounts.privateKeyToAccount(
           "9176b3b77e8cec54e5406f93ffe839cd9115a7efe36d2a0a53fc71f8721352db"
         );
+        // const account1 = web3s.eth.accounts.privateKeyToAccount(
+        //   "dd0771907b760c1cd6e19acc3bc51e7fe32d2661ab1fa7b4e52cef20cfc051f2"
+        // );
+        // console.log(account1)
+        // const re= web3s.eth.getBalance(account1.address).then((res)=>console.log(res))
+        // console.log(re)
         console.log(web3s.eth.getBalance("0x15d95FE28f86773b28424b6Aa045B603b03166Db"))
         console.log(account.address);
         console.log(values.supplier_name,values.material,values.quantity,values.user_id,values.latitude,values.longitutde)
         const receipt = await supplier_contract.methods.itemBySupplier(values.upc,values.supplier_name,values.latitude,values.longitutde,values.material,values.price,values.quantity).send({
             from: accounts
         })
-      values.hash=receipt.transactionHash
+      console.log(receipt.transactionHash)
 
         //     const output=receipt.events.logNewItem
         //  const quantity =output.returnValues[0]
@@ -107,7 +112,7 @@ export default function SuppForm(props) {
         
         data.append('file',file)
         data.append('upc',values.upc)
-        data.append('user_id',user_id)
+        data.append('user_id',6)
         data.append('createdAt',values.createdAt)
         data.append('quantity',values.quantity)
         data.append('longitude',values.longitude)

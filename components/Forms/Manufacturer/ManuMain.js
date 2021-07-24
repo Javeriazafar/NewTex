@@ -41,6 +41,7 @@ export default function Manufacturer() {
     const[userList,setUserList]=useState([]);
     const[confirmDialog,setConfirmDialog]=useState({isOpen:false,title:'',subTitle:''});
     const [users,setUsers]=useState([]);
+    const [updat,setup]= useState(0)
 
     const{
     
@@ -69,7 +70,7 @@ export default function Manufacturer() {
             console.log(response)
             setUsers(response.data);
         }); 
-      }, []);
+      }, [updat]);
 
 
 
@@ -77,6 +78,7 @@ export default function Manufacturer() {
         setOpenPopup(false);
         // if(user.id!=0)
         //    {updateUser();}
+        setup(user.price)
         setNotify({
             isOpen:true,
             message:`Submitted Successfully at transaction ID : ${user}`,

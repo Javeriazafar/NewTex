@@ -1,5 +1,5 @@
 import React, { useState, map } from "react";
-import PageHeader from "../../components/PageHeader";
+import PageHeader from "../../PageHeader";
 import TextField from "@material-ui/core/TextField";
 import {useSelector, useDispatch} from 'react-redux';
 
@@ -13,29 +13,31 @@ import {
   TableCell,
   Toolbar,
   InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select as MuiSelect
 } from "@material-ui/core";
-import useTable from "../../components/useTable";
-import { useForm, Form } from "../../components/useForm";
-import Controls from "../../components/controls/Controls";
+import useTable from "../../../components/useTable";
+import { useForm, Form } from "../../../components/useForm";
+import Controls from "../../../components/controls/Controls";
 import { Search } from "@material-ui/icons";
 import axios from "axios";
 import AddIcon from "@material-ui/icons/Add";
-import { toggleCartHidden, togglefLAG } from "../../redux/item/item.actions";
+import { toggleCartHidden, togglefLAG } from "../../../redux/item/item.actions";
 
 
 const headCells = [
-  { id: "upc", label: "UPC" },
+  { id: "upc", label: "Client" },
 
-  { id: "quantity", label: "Quantity" },
-  { id: "quantitys", label: "Deliver Quantity" },
-  { id: "location", label: "Location" },
+  { id: "quantity", label: "Description" },
+  { id: "quantitys", label: "Merchandizer" },
+  { id: "location", label: "Product UPC" },
   //{id:'date', label: 'Date'},
-  { id: "description", label: "Requirement" },
 
   { id: "action", label: "Action" },
 ];
 
-export default function InventoryForm(props) {
+export default function NegotiateRequest(props) {
   const buttonclick = useSelector(state => state.item)
 
 
@@ -49,18 +51,23 @@ export default function InventoryForm(props) {
     },
   });
   const initialFValues = {
-    quantitys: "",
+    merchandizer: "",
+    options:''
+    
     
   };
-  const[set, isset]=useState(false)
+  const[set, isset]=useState('')
   const [search, setSeach] = useState("");
   const [users, setUsers] = useState([]);
+  const [productupc, setproductupc] = useState([]);
+  const [options, setoptions] = useState("");
+
   const [userList, setUserList] = useState([]);
   const validate = (fieldValues = values) => {
     let temp = { ...errors };
 
     if ("quantity" in fieldValues)
-      temp.quantitys = fieldValues.quantitys ? "" : "This field is required.";
+      temp.merchandizer = fieldValues.merchandizer ? "" : "This field is required.";
 
     setErrors({
       ...temp,
@@ -104,35 +111,37 @@ export default function InventoryForm(props) {
   React.useEffect(() => {
 
     setUsers([recordForEdit]);
-
+    axios.get('http://localhost:5000/user/getallproducts')
+        .then((response)=>{
+            console.log(response)
+            setproductupc(response.data)
+            
+        });
     console.log(recordForEdit);
   }, []);
 
   const acceptOrder = async (item) => {
-    console.log(item.upc);
+
+    console.log(item,values.options,values.merchandizer);
     axios
-      .get("http://localhost:5000/user/acceptorder", {
+      .get("http://localhost:5000/user/acceptbrandorder", {
         params: {
-          upc: item.upc,
-          quantity: values.quantitys,
-          material: item.material,
-          description: item.description,
-          merchandizer: item.merchandizer,
-          muser_id: item.user_id,
-          req_id : item.req_id
+          sample: item.sample,
+          merchandizer: values.merchandizer,
+          productupc: values.options,
+          req_id : item.breq_id
           //pass user id of supplier currently logged in
         },
       })
       .then((response) => {
-        console.log(item.req_id);
-        isset(true)
-        console.log(set)
-        addOrEdit([values,item.req_id],resetForm);
-        dispatch(toggleCartHidden(item.req_id))
+        console.log(item.breq_id);
+        
+        addOrEdit([values,item],resetForm);
+        dispatch(toggleCartHidden(item.breq_id))
         
       });
- 
-
+    
+    
     setOpenPopup(false);
   };
 
@@ -177,25 +186,36 @@ export default function InventoryForm(props) {
           <TableBody>
             {recordsAfterPaging().map((item) => (
               <TableRow key={item.user_id}>
-                <TableCell>{item.upc}</TableCell>
-                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{item.user_name}</TableCell>
+                <TableCell>{item.description}</TableCell>
                 <TableCell>
                   <TextField
-                    id="standard-number"
-                    name="quantitys"
-                    type="number"
-                    label="Quantity in PCs"
-                    value={values.quantitys}
+                    
+                    name="merchandizer"
+                   
+                    label="Merchandizer"
+                    value={values.merchandizer}
                     onChange={handleInputChange}
                     InputLabelProps={{
                       shrink: true,
                     }}
                   />
                 </TableCell>
-                <TableCell>{item.location}</TableCell>
-                <TableCell>{item.description}</TableCell>
-
-                {/* <TableCell>{item.date}</TableCell> */}
+                
+            <TableCell>
+            <InputLabel>Product UPC</InputLabel>
+            <MuiSelect
+                label='Product upc'
+                name='options'
+                value={values.options}
+                onChange={handleInputChange}>
+                <MenuItem value="">select</MenuItem>
+                {
+                    productupc.map(
+                        item => (<MenuItem key={item.id} value={item.productupc}>{item.productupc}</MenuItem>)
+                    )
+                }
+            </MuiSelect></TableCell>
                 <TableCell>
                   <Controls.ActionButton
                     label="Actions"

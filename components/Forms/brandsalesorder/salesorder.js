@@ -1,8 +1,11 @@
 import React, { useState, map } from "react";
-import PageHeader from "../../components/PageHeader";
+import PageHeader from "../../PageHeader";
 import PeopleOutlineTwoToneIcon from "@material-ui/icons/AccountBalance";
 import { withRouter } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import Provider from "@truffle/hdwallet-provider";
+import Web3 from "web3";
+import supplychain from "../../contracts/Supplychain.json";
 import Qrcode from "qrcode";
 
 import {
@@ -15,36 +18,26 @@ import {
   InputAdornment,
   Button,
 } from "@material-ui/core";
-import useTable from "../../components/useTable";
-import Controls from "../../components/controls/Controls";
+import useTable from "../../useTable";
+import Controls from "../../controls/Controls";
 import { Search } from "@material-ui/icons";
 import axios from "axios";
 import AddIcon from "@material-ui/icons/Add";
-import Popup from "../../components/Popup";
-import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
+import Popup from "../../Popup";
 import CloseIcon from "@material-ui/icons/Close";
-import Notification from "../../components/Notification";
-import ConfirmDialog from "../../components/ConfirmDialog";
-import { toggleCartHidden } from "../../redux/item/item.actions";
-import supplychain_contract from "../../components/Forms/factory";
-import Web3 from "web3";
+import Notification from "../../Notification";
+import ConfirmDialog from "../../ConfirmDialog";
+import { toggleCartHidden } from "../../../redux/item/item.actions";
 
 const headCells = [
-  { id: "Supplier", label: "Supplier" },
-
   { id: "upc", label: "UPC" },
   { id: "merchandizer", label: "Merchandizer" },
-
   { id: "description", label: "Description" },
   { id: "order", label: "Order Date" },
-  { id: "quantity", label: "Quantity" },
-  { id: "status", label: "Status" },
-
-  //{id:'date', label: 'Date'},
   { id: "actions", label: "Actions" },
 ];
 
-export default function SSOform(props) {
+export default function BrandSALESORDER(props) {
   const buttonclick = useSelector((state) => state.item);
   console.log(buttonclick);
   const dispatch = useDispatch();
@@ -77,6 +70,19 @@ export default function SSOform(props) {
     users,
     filterFn
   );
+const infuraKey =
+  "wss://rinkeby.infura.io/ws/v3/10cfdc60e2c841e4b03a5adf4abae931";
+
+const privateKey =
+  "9176b3b77e8cec54e5406f93ffe839cd9115a7efe36d2a0a53fc71f8721352db";
+const BRAND_provider = new Provider(privateKey, infuraKey);
+const web3s = new Web3(BRAND_provider);
+const BRAND_contract = new web3s.eth.Contract(
+  supplychain.abi,
+  "0xCf77731Cb0C5459a5237BEAF5Df65526BE2Ff12a"
+);
+
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -95,7 +101,7 @@ export default function SSOform(props) {
   };
 
   React.useEffect(() => {
-    axios.get("http://localhost:5000/user/getMSO").then((response) => {
+    axios.get("http://localhost:5000/user/getsalesorder").then((response) => {
       console.log(response);
       setUsers(response.data);
     });
@@ -121,33 +127,59 @@ export default function SSOform(props) {
   };
   const acceptDelivery = async ({ item }) => {
     console.log(item.quantity);
-    const accounts = "0x6829b48374596ada2b7cba811697454ed950c71e";
-    ("18748502726993317880");
-    console.log(supplychain_contract.methods.purchaseItemByManufacturer);
-    const receiept = await supplychain_contract.methods
-      .purchaseItemByManufacturer(item.upc, item.quantity, item.merchandizer)
+    const accounts = "0x17ca0f60ee0d9126f410dba466a659b3fb751496";
+   const receipt = await BRAND_contract.methods
+      .purchaseItemByBrand(item.productupc)
       .send({
         from: accounts,
       });
+
+    console.log(receipt.transactionHash);
+  };
+
+  const onDelete = (user_id) => {
+    console.log(user_id);
+    setConfirmDialog({
+      ...confirmDialog,
+      isOpen: false,
+    });
+    axios
+      .delete(`http://localhost:5000/users/deleteitem/${user_id}`)
+      .then((response) => {
+        setUsers(
+          users.filter((val) => {
+            return val.user_id !== user_id;
+          })
+        );
+      });
+    setNotify({
+      isOpen: true,
+      message: "Deleted Successfully",
+      type: "error",
+    });
   };
   const checkstatus = async ({ item }) => {
-    const logger = await supplychain_contract.methods
-      .fetchItemBufferOne(item.upc)
+   
+    const logger = await BRAND_contract.methods
+      .fetchItemBufferThree(item.productupc)
       .call();
     console.log(logger);
 
     const value = ` <div>
-  Story behind your purchased Raw Material: ${item.upc} 
-  <h3> Origin Supplier By : ${logger[4]} (${logger[3]} ) </h3>
+  Story behind your Product: ${item.productupc} 
+  <h3>Manaufactured By : ${logger[2]} </h3>
   <br/>
-  <h3>Purchased by Manufacturer : ${logger[2]} </h3>
+  <h3>Client Address : ${logger[3]} </h3>
   <br/>
-  <h3>Longitutde : ${logger[6]} </h3>
+  <h3>Merchandizer Involved : ${logger[4]} </h3>
   <br/>
-  <h3>Latitude : ${logger[5]} </h3>
+  <h3>Machines used in manufacturing your Product Involved : ${logger[8]} </h3>
   <br/>
-  <h3>Created At : ${logger[8]} </h3>
+  <h3>Passed through treatements : ${logger[5]} </h3>
   <br/>
+  <h3>Emplyess  Involved : ${logger[7]} </h3>
+  <br/>
+ 
 </div>`;
 
     console.log(value);
@@ -159,7 +191,6 @@ export default function SSOform(props) {
       })
     );
   };
-
   return (
     <>
       <PageHeader
@@ -169,44 +200,16 @@ export default function SSOform(props) {
       />
 
       <Paper style={{ margin: "2px", padding: "2px" }}>
-        <Toolbar>
-          <Controls.Input
-            style={{ width: "50%" }}
-            label="Search Users"
-            //   className={classes.SerachInput}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-            onChange={handleSearch}
-          />
-          <Controls.MainButton
-            style={{ position: "absolute", right: "10px" }}
-            text="Add New"
-            //    className={classes.newButton}
-            variant="outlined"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setOpenPopup(true);
-              setRecordForEdit(null);
-            }}
-          />
-        </Toolbar>
+        
         <TblContainer>
           <TblHead />
           <TableBody>
             {recordsAfterPaging().map((item, idx) => (
               <TableRow key={idx}>
-                <TableCell>{item.user_name}</TableCell>
-                <TableCell>{item.upc}</TableCell>
-                <TableCell>{item.merchandizer}</TableCell>
-                <TableCell>{item.descript}</TableCell>
+                <TableCell>{item.productupc}</TableCell>
+                <TableCell>{item.merch_id}</TableCell>
+                <TableCell>{item.sample}</TableCell>
                 <TableCell>{item.SOCreatedAt}</TableCell>
-                <TableCell>{item.quantity}</TableCell>
-                <TableCell>{item.status}</TableCell>
 
                 <TableCell>
                   {console.log(users, buttonclick.req_idd == item.req_id)}
@@ -219,11 +222,17 @@ export default function SSOform(props) {
                         dispatch(toggleCartHidden(item));
                       }}
                     >
-                      {item.orderpending}
+                      {item.status}
                     </Button>
                   ) : (
-                    <Button id="button12" disabled>
-                      Order Pending
+                    <Button
+                      id="button12"
+                      onClick={() => {
+                        acceptDelivery({ item });
+                        dispatch(toggleCartHidden(item));
+                      }}
+                    >
+                      Order Completed
                     </Button>
                   )}
 
@@ -248,7 +257,11 @@ export default function SSOform(props) {
         </TblContainer>
         <TblPagination />
       </Paper>
-      <Popup title="QR Code" openPopup={openPopup} setOpenPopup={setOpenPopup}>
+      <Popup
+        title="QR Code"
+        openPopup={openPopup}
+        setOpenPopup={setOpenPopup}
+      >
         {" "}
         {imageurl ? (
           <a href={imageurl} download>

@@ -89,7 +89,7 @@ export default function ManuForm(props){
         if(id==0){
         try{
             console.log()
-    const accounts = '0xebf665bf612b6d7c129d8926627d393e0a6a8199'
+    const accounts = '0x6829b48374596ada2b7cba811697454ed950c71e'
     const product= await supplychain_contract.methods.processedItemByManufacturer(values._upc,values.machine,values.productupc,values.merch_id,values.treatments,values.empaddress).send({
         from:accounts
     })
@@ -137,8 +137,7 @@ else{
     quantity:values.quantity,
     id:id})
     .then((response)=>{
-        console.log(response)
-        console.log(values.sewing)
+       
         setUserList(userList.map((val)=>{
           return val.product_id === id ? {id:val.product_id,sewing:newRole,washing:newRole,finishing:newRole,cutting:newRole}:val;
         }))

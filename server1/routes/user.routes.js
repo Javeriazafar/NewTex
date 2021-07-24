@@ -32,8 +32,30 @@ router.route("/getSSOSALESORDER").get((req, res) => {
 });
 
 router.route("/getMSO").get((req, res) => {
-  db.query("SELECT user_name, merchandizer, upc, descript, SOCreatedAt, quantity, status FROM user inner join  manu_sales_order on user.user_id= manu_sales_order.user_id",
-   (err, result) => {
+  db.query(
+    "SELECT req_id, user_name, merchandizer, upc, descript, SOCreatedAt, quantity, status, orderpending FROM user inner join  manu_sales_order on user.user_id= manu_sales_order.user_id",
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      res.send(result);
+    }
+  );
+});
+
+router.route("/getallrequests").get((req, res) => {
+  db.query(
+    "select *  from user inner JOIN requestbymanufacturer ON user.user_id=requestbymanufacturer.user_id",
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      res.send(result);
+    }
+  );
+});
+router.route("/getmerchstock").get((req, res) => {
+  db.query("select *  from manu_stock", (err, result) => {
     if (err) {
       console.log(err);
     }
@@ -41,14 +63,6 @@ router.route("/getMSO").get((req, res) => {
   });
 });
 
-router.route("/getallrequests").get((req, res) => {
-  db.query("select *  from user inner JOIN requestbymanufacturer ON user.user_id=requestbymanufacturer.user_id", (err, result) => {
-    if (err) {
-      console.log(err);
-    }
-    res.send(result);
-  });
-});
 router.route("/getallitems").get((req, res) => {
   db.query("select * from supplier_item", (err, result) => {
     if (err) {
@@ -57,6 +71,57 @@ router.route("/getallitems").get((req, res) => {
     res.send(result);
   });
 });
+
+router.route("/getsalesorder").get((req, res) => {
+  db.query("select * from sales_order", (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send(result);
+  });
+});
+
+router.route("/getbrandreq").get((req, res) => {
+  db.query("select *  from user inner JOIN requestbybrand ON user.user_id=requestbybrand.user_id", (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send(result);
+  });
+});
+ 
+router.route('/createbrandorder',upload.single("file")).post((req,res)=>{
+  const {
+    file,
+    body: { description ,user_id},
+  } = req;
+
+  console.log(req.files.file);
+  let uploadPath;
+
+  if (!req.files || Object.keys(req.files).length === 0) {
+    console.log(file);
+  }
+
+  // name of the input is sampleFile
+  uploadPath = __dirname + "/../../public/uploadsamplefile/" + req.files.file.name;
+
+  console.log(req.files.file);
+
+  //Use mv() to place file on the server
+  req.files.file.mv(uploadPath, function (err) {
+    if (err) return res.status(500).send(err);
+
+ db.query('insert into requestbybrand(sample,description,user_id) values(?,?,?)',[req.files.file.name,description,user_id],(err,result)=>{
+     if(err){
+       console.log(err)
+     }
+     res.send(result)
+ })
+});
+});
+
+
 router.route("/createuser").post((req, res) => {
   const data = req.body;
   //console.log(req.body.us_name)
@@ -93,6 +158,17 @@ router.route("/createuser").post((req, res) => {
 router.route("/getsuppliersItems/:id").get((req, res) => {
   db.query(
     "SELECT * FROM supplier_item WHERE user_id=?",
+    [req.params.id],
+    (err, rows, fields) => {
+      if (!err) res.send(rows);
+      else console.log(err);
+    }
+  );
+});
+
+router.route("/getsupplierrequests/:id").get((req, res) => {
+  db.query(
+    "SELECT * FROM requestbymanufacturer WHERE user_id=?",
     [req.params.id],
     (err, rows, fields) => {
       if (!err) res.send(rows);
@@ -186,25 +262,64 @@ router.route("/acceptorder").get((req, res) => {
   const upc = req.query.upc;
   const new_quantity = req.query.quantity;
   const merchandizer = req.query.merchandizer;
-  const descrip= req.query.description;
-  const material= req.query.material;
-  const muser_id= req.query.muser_id;
-  const suser_id=26
-  const req_id = req.query.req_id
-console.log(req.query.req_id)
+  const descrip = req.query.description;
+  const material = req.query.material;
+  const muser_id = req.query.muser_id;//35
+  const suser_id = 6;//dynamic
+  const req_id = req.query.req_id;
+  console.log(req.query.req_id);
   db.query(
     `call Accept_Manu_Order(?,?,?,?,?,?,?,?)`,
-    [upc,new_quantity, merchandizer, material, descrip,suser_id,muser_id, req_id],
+    [
+      upc,
+      new_quantity,
+      merchandizer,
+      material,
+      descrip,
+      suser_id,
+      muser_id,
+      req_id,
+    ],
     (err, result) => {
       if (err) {
         console.log(err);
       } else {
-        
         res.send(result[0]);
       }
     }
   );
 });
+
+
+
+router.route("/acceptbrandorder").get((req, res) => {
+
+
+  const sample = req.query.sample;
+  const merchandizer = req.query.merchandizer;
+  const productupc = req.query.productupc;
+  
+  const req_id = req.query.req_id;
+  console.log(req.query.req_id);
+  db.query(
+    `call Accept_Brand_Order(?,?,?,?)`,
+    [
+      req_id,
+      merchandizer,
+      sample,
+      productupc,
+    ],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(result[0]);
+      }
+    }
+  );
+});
+
+
 
 router.route("/createproduct").post((req, res) => {
   const rawitemupc = req.body.rawitemupc;
@@ -250,10 +365,12 @@ router.route("/createrequestmanu").post((req, res) => {
   const description = req.body.description;
   const user_id = req.body.user_id;
   const quantity = req.body.quantity;
+  const suser_id = req.body.Suser_id;
+
 
   db.query(
-    "INSERT INTO requestbymanufacturer(quantity, upc, merchandizer, material, description, user_id) values(?,?,?,?,?,?)",
-    [quantity,upc,merchandizer, material, description,user_id],
+    "INSERT INTO requestbymanufacturer(quantity, upc, merchandizer, material, description, user_id,suser_id) values(?,?,?,?,?,?,?)",
+    [quantity, upc, merchandizer, material, description, user_id,suser_id],
     (err, result) => {
       if (err) {
         console.log(err);
@@ -282,22 +399,30 @@ router.route("/updateproduct").put((req, res) => {
 });
 
 router.route("/updatemanurequest").put((req, res) => {
-  
   const quantity = req.body.quantity;
-  const req_id= req.body.req_id;
+  const req_id = req.body.req_id;
   console.log(req.body.req_id);
-  db.query(
-    'call updaterequest(?,?) ',
-       [req_id,quantity],
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(result)
-        res.send(result);
-      }
+  db.query("call updaterequest(?,?) ", [req_id, quantity], (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+      res.send(result);
     }
-  );
+  });
+});
+router.route("/updatebrandrequest").put((req, res) => {
+  const merchandizer = req.body.merchandizer;
+  const req_id = req.body.req_id;
+  console.log(req.body.req_id);
+  db.query("call updaterequest(?,?) ", [req_id, merchandizer], (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+      res.send(result);
+    }
+  });
 });
 router.route("/getsuppliersItems").get((req, res) => {
   const user_id = req.body.user_id;

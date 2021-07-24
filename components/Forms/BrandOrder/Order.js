@@ -1,21 +1,20 @@
 import React, { useState, map } from "react";
-import PageHeader from "../../components/PageHeader";
+import PageHeader from '../../PageHeader';
 import PeopleOutlineTwoToneIcon from "@material-ui/icons/AccountBalance";
 import {useSelector, useDispatch} from 'react-redux';
-
 import {
   Paper,
   makeStyles,
   Toolbar,
   InputAdornment,
 } from "@material-ui/core";
-import Popup from "../../components/Popup";
+import Popup from "../../../components/Popup";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import CloseIcon from "@material-ui/icons/Close";
-import Notification from "../../components/Notification";
-import ConfirmDialog from "../../components/ConfirmDialog";
-import useTable from "../../components/useTable";
-import Controls from "../../components/controls/Controls";
+import Notification from "../../../components/Notification";
+import ConfirmDialog from '../../../components/ConfirmDialog';
+import useTable from "../../../components/useTable";
+import Controls from "../../../components/controls/Controls";
 import { Search } from "@material-ui/icons";
 import axios from "axios";
 import AddIcon from "@material-ui/icons/Add";
@@ -25,11 +24,8 @@ import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import supplychain_contract from "../../components/Forms/factory";
-import Provider from "@truffle/hdwallet-provider";
-import Web3 from "web3";
-import InventoryForm from "./InventoryForm";
-import { togglefLAG } from "../../redux/item/item.actions";
+
+import NegotiateRequest from "./NegotiateRequest";
 
 
 const headCells = [
@@ -58,7 +54,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function RequestsByManufacturer() {
+export default function BrandOrder() {
 
   const ReqChange = useSelector(state => state.item)
 
@@ -84,10 +80,8 @@ export default function RequestsByManufacturer() {
     title: "",
     subTitle: "",
   });
-  // const router = useRouter();
-  // const { id } = router.query;
   const [users, setUsers] = useState([]);
-  const [item, setitem] = useState([]);
+  const [item, setitem] = useState('');
   const [userList, setUserList] = useState([]);
  const [updat,setup]= useState(0)
   const [openPopup, setOpenPopup] = useState(false);
@@ -114,18 +108,18 @@ export default function RequestsByManufacturer() {
   };
   React.useEffect(() => {
     axios
-      .get("http://localhost:5000/user/getallrequests")// get requests wherer user-id of supplier logged in matches the suser-id against the manu requests
-      .then((response) => {  // use getsupplierrequests/${id} this api
+      .get("http://localhost:5000/user/getbrandreq")
+      .then((response) => {
         console.log(response);
         setUsers(response.data);
       });
     
-  },[updat]);
+  },[]);
 
 const updateuser=async(user,req_id)=>{
   console.log(req_id,user)
   axios
-  .put("http://localhost:5000/user/updatemanurequest",{
+  .put("http://localhost:5000/user/updatebrandrequest",{
     quantity:user,
     req_id:req_id
   })
@@ -136,7 +130,7 @@ const updateuser=async(user,req_id)=>{
         return val.req_id === req_id
           ? {
               req_id: val.req_id,
-              quantity:user
+              merchandizer:user
             }
           : val;
       })
@@ -149,6 +143,7 @@ const updateuser=async(user,req_id)=>{
 
 
 const openInPopup = (item) => {
+  console.log(item)
   setRecordForEdit(item);
   setOpenPopup(true);
 };
@@ -156,14 +151,14 @@ const openInPopup = (item) => {
 
 
 
-const addOrEdit = async ([user,req_id], resetForm) => {
+const addOrEdit = async ([values,item], resetForm) => {
   setOpenPopup(false);
   // if(user.id!=0)
-  
+  console.log(values.merchandizer,item.breq_id)
  isset(true)
 setreq(req_id)
-setup(user.quantitys)
-  updateuser(user.quantitys,req_id)
+setup(item.productupc)
+  updateuser(values.merchandizer,item.breq_id)
 
 
   setNotify({
@@ -212,36 +207,39 @@ setup(user.quantitys)
         {recordsAfterPaging().map((item,idx) => (
           <Card className={classes.root} variant="outlined">
             <CardContent key={item.user_id}>
-              Manufacturer Name:
+              Brand Name:
               <Typography variant="h5" component="h2">
                 {item.user_name}
               </Typography>
-              <Typography
-                className={classes.title}
-                color="textPrimary"
-                gutterBottom
-              >
-                Merchandizer to contact: {item.merchandizer}
+              
+              <Typography variant="body2" component="p">
+              
+                <Button download={'/../public/upload/logo.PNG'} >
+                  <i className="fas fa-download"/>
+                  Download Sample File
+                </Button>
+               
               </Typography>
               <Typography variant="body2" component="p">
-                Material: {item.material}
+                Created: {item.RequestCreatedAt}
               </Typography>
               <Typography variant="body2" component="p">
-                UPC: {item.upc}
+                Status: {item.status}
               </Typography>
               <Typography variant="body2" component="p">
-                Quantity Required: {item.quantity}
-              </Typography>
-              <Typography variant="body2" component="p">
-              Status: {item.status}
+              Product UPC: {item.productupc}
             </Typography>
+            <Typography variant="body2" component="p">
+              Merchandizer: {item.merchandizer}
+            </Typography>
+              
               <Typography className={classes.pos} color="textPrimary">
                 Description: {item.description}
                 <br />
               </Typography>
             </CardContent>
-            {console.log(userList, ReqChange.req_idd == item.req_id)}
-            {ReqChange.req_idd == item.req_id && userList && ReqChange.flag ? (
+            {console.log(userList, ReqChange.req_idd == item.breq_id)}
+            {ReqChange.req_idd == item.breq_id && userList && ReqChange.flag ? (
               
               <Button disabled>Completed</Button>
             ) : (
@@ -253,7 +251,7 @@ setup(user.quantitys)
                   openInPopup(item);
                 }}
               >
-                Check Inventory
+               Negotiate
               </Button>
               
             )}
@@ -271,7 +269,7 @@ setup(user.quantitys)
       openPopup={openPopup}
       setOpenPopup={setOpenPopup}
     >
-      <InventoryForm
+      <NegotiateRequest
         addOrEdit={addOrEdit}
         setOpenPopup={setOpenPopup}
         recordForEdit={recordForEdit}

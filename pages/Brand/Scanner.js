@@ -4,7 +4,9 @@ import React from 'react';
 import SideMenu from '../../components/sideMenu/SideMenu' ;
 import TestHeader from '../../components/Headers/TestHeader' ;
 import {CssBaseline, makeStyles,createMuiTheme, ThemeProvider} from '@material-ui/core' ;
-import SupplierOrder from '../../components/Forms/Supplierorder/Order';
+import SSOform from '../../components/Forms/SSOSUPPLIER/SSOform';
+import BrandSALESORDER from '../../components/Forms/brandsalesorder/salesorder';
+import Scan from '../../components/Forms/ScanProduct/Scan';
 
 const theme = createMuiTheme({
   palette: {
@@ -30,16 +32,16 @@ const theme = createMuiTheme({
 })
 
 
- function Order() {
+ function Scanner() {
   // const classes = useStyles();
 
   return (<div >
   <ThemeProvider theme={theme} >
-      <SideMenu />
+      
       <TestHeader />
       <div style={{paddingLeft: '330px',width: '100%',paddingRight: '10px'}} >
       
-     <SupplierOrder  
+     <Scan  
      />
     </div>
     
@@ -47,7 +49,7 @@ const theme = createMuiTheme({
     </ThemeProvider>
     </div>)
 }
-export default Order;
+export default Scanner;
 // style={{ 
 //   paddingLeft: '20px',
 //   paddingRight: '20px',

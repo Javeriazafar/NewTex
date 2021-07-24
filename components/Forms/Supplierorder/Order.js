@@ -7,6 +7,7 @@ import {
   Toolbar,
   InputAdornment,
 } from "@material-ui/core";
+
 import useTable from "../../useTable";
 import Controls from "../../controls/Controls";
 import { Search } from "@material-ui/icons";
